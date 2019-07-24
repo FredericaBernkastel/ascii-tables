@@ -360,7 +360,7 @@ function createTable() {
     var output = "";
 
     // echo comment wrapper if any
-    output += commentbefore + "\n";
+    output += (commentbefore !== "") ? commentbefore + "\n" : "";
 
     // output the top most row
     // Ex: +---+---+
@@ -479,6 +479,7 @@ function parseTableClick() {
 
 function parseTable(table) {
     var separator = $('#separator').val();
+    var style = $('#style').val();
 
     if (separator == "") {
         //Default separator is the tab
@@ -486,6 +487,7 @@ function parseTable(table) {
     }
 
     var lines = table.split('\n');
+    var header = lines[0];
 
     // discard separator lines
     for (var i = 0; i < lines.length; i++) {
@@ -502,10 +504,21 @@ function parseTable(table) {
 
     // Identify column separators
     var colIndexes = [];
-    for (var j = 0; j < longest.length; j++) {
-        if (isColumnSeparator(lines.slice(), j)) {
-            colIndexes.push(j);
-        }
+    
+    switch(style){
+      
+      case "mysql": {
+        header.split('').map((x, i) => {
+          if(x === '+')
+            colIndexes.push(i);
+        })
+        break;
+      }
+      
+      default: {
+        alert("Not implemented");
+        break;
+      }
     }
 
     if (colIndexes.length < 2) {
@@ -542,28 +555,6 @@ function parseTable(table) {
     }
 
     return result;
-}
-
-function isColumnSeparator(lines, column) {
-    // Return true if this column is the same character all the way to the last row
-    if (lines.length < 2) {
-        // Last line in array, must be a valid separator
-        return true;
-    } else {
-        var thisLine = lines[0];
-        var nextLine = lines[1];
-        if (column >= thisLine.length) {
-            // Column is out of range, must not be a separator
-            return false;
-        }
-        if (thisLine[column] == nextLine[column] && thisLine[column] != " ") {
-            // Rows match, check next row down
-            return isColumnSeparator(lines.splice(0,1), column);
-        } else {
-            // Rows are different, this is not a separator
-            return false;
-        }
-    }
 }
 
 function isSeparatorLine(line) {
